@@ -1,0 +1,121 @@
+---
+title: "Data mining assignment1"
+author: "Rajiv Devidi Reddy"
+date: "2022-10-29"
+output:
+  word_document: default
+  pdf_document: default
+  
+---
+
+PART A
+
+1.What is the main purpose of regularization when training predictive models?
+
+When training a data model performs exceptionally well but sometimes it fails during the testing, this kind of situation is called overfitting, which is dealt with regularization. Regularization is a technique used to reduce errors by fitting a function properly on the given training set and it avoids the overfitting. It is a technique which regularizes or shrinks the coefficients towards zero, to avoid overfitting.
+
+2. What is the role of a loss function in a predictive model? And name two common loss functions for regression models and two common loss functions for classification models.
+
+Loss function is a method of measuring models algorithm such that how well your model algorithm suits for the featured data set, and it also measures how good your model is in terms of predicting the expected outcome. Loss function also determines the distance between expected outcomes and output of algorithm.
+Two common loss functions of classification model
+ 1.Binary Cross-Entropy loss/Log loss
+ 2.Hinge Loss
+Two common loss functions of regression model
+ 1. Mean square Error / Quadratic loss / L2 Loss
+ 2.  Mean Absolute Error / L2 Loss
+
+3.Consider the following scenario. You are building a classification model with many hyper parameters on a relatively small dataset. You will see that the training error is extremely small. Can you fully trust this model?
+
+The provided scenario is the model with numerous hyperparameters was created using a small dataset. There is a good chance that the model is going to be overfitted. A model is only regarded to be a good prediction model if it performs well on both train and unseen data. Because the given model is prone to overfitting and has a high variance, it performs well on the training set but is likely to perform poorly on unseen data due to overfitting. Hence the model cannot be trusted because it may be overfit.
+
+4.What is the role of the lambda parameter in regularized linear models such as Lasso or Ridge regression models?
+
+Lambda parameter, which is also termed as Regularization rate, it controls the amount of regularization applied to the model. Increasing the lambda reduces the over fitting. Increasing the lambda shrinks the coefficient values for both lasso and regression models. Higher lambda means that it gives heavier regularization.
+
+
+PART B
+
+
+```{r}
+#Loading required packages
+
+library(ISLR)
+library(dplyr)
+library(glmnet)
+library(caret)
+
+
+attach(Carseats)
+
+summary(Carseats)
+
+Carseats_Filtered <- Carseats %>% select("Sales", "Price", "Advertising","Population","Age","Income","Education")  
+
+x <- data.matrix(Carseats %>% select("Price", "Advertising","Population","Age","Income","Education") )
+
+y <- data.matrix (Carseats %>% select("Sales"))
+
+#Q1.Build a Lasso regression model to predict Sales based on all other attributes ("Price","Advertising", "Population", "Age", "Income" and "Education").  What is the best value of lambda for such a lasso model? 
+
+
+
+library(glmnet)
+
+#performing k-fold to find optimal lambda
+cv_fit <- cv.glmnet(x, y, alpha = 1)
+
+#find optimal lambda value that minimizes test
+
+best_lambda <- cv_fit$lambda.min
+best_lambda
+
+plot(cv_fit)
+
+lr <- glmnet(x, y , alpha = 1 )
+plot(lr, xvar ="lambda")
+
+#best lambda value for such lasso model is .004305309
+
+#Q2. What is the coefficient for the price (normalized) attribute in the best model (i.e. model with the optimal lambda)? 
+
+#finding the coefficients of the best model
+
+b_model = glmnet(x,y,alpha = 1, lambda = best_lambda)
+coef(b_model)
+
+#The best coefficient for the price normalized attribute in the best model with the optimal lambda is -0.0571806037
+
+#Q3. How many attributes remain in the model if lambda is set to 0.01? How that number changes if lambda is increased to 0.1?
+
+#setting lambda at 0.01
+
+change0.01 = glmnet(x,y,alpha = 1, lambda = 0.01)
+coef(change0.01)
+
+#setting lambda at 0.1
+
+change0.1 = glmnet(x,y,alpha = 1, lambda = 0.1)
+coef(change0.1)
+
+
+#Q4.Build an elastic-net model with alpha set to 0.6. What is the best value of lambda for such a model? 
+
+
+e.netmodel = glmnet(x,y, alpha = 0.6)
+plot(e.netmodel, xvar = "lambda")
+
+plot(cv.glmnet(x,y, alpha= 0.6))
+
+#performing k-fold validation to find optimal lambda
+
+elasticmodel = cv.glmnet(x,y, alpha= 0.6)
+
+#finding optional lambda value that minimizes test
+
+bestlambdaela = elasticmodel$lambda.min
+bestlambdaela
+
+#the best value for such elastic-net model is .00653
+```
+
+
